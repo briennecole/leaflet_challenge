@@ -14,7 +14,7 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 
-const setColor = (depth) => {
+function circleColor(depth) {
   switch (true) {
     case depth < 10:
       return "green";
@@ -28,6 +28,9 @@ const setColor = (depth) => {
       return "blue"
   }}
 
+function circleSize(magnitude) {
+    return (magnitude*10000);
+  }
 // Store our API endpoint inside the queryURL
 const queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
 
@@ -58,49 +61,48 @@ const queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_
 
         // Create a GeoJSON layer containing the features array on the earthquakeData object
     // Run the onEachFeature function once for each piece of data in the array
-        let earthquakes = data.feaatures;
+        let earthquakes = data.features;
 
-        earthquakes.forEach(quake => {
-          let magnitude = quake.properties.mag;
-          let depth = quake.geometry.coordinates[2]
-          let place = quake.properties.place;
+            earthquakes.forEach(earthquake => {
+              let magnitude = earthquake.properties.mag;
+              let depth = earthquake.geometry.coordinates[2];
+              let place = earthquake.properties.place;
 
-     
-        L.circle([earthquakes.geometry.coordinates[1], earthquakes.geometry.coordinates[0]], {
-          // onEachFeature: onEachFeature,
-          // pointToLayer: (earthquakeData, latlng) => {
-          // return new L.Circle(latlng, {
-              radius: feature.properties.mag*25000,
-              fillColor: setColor(earthquakes.geometry.coordinates[2]),
-              fillOpacity: .5,
-              storke: false,
-          }).bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><h3>Magnitude: "(feature.properties.mag) + "</h3><h3>Depth: " + feature.geometry.coordinates[2] + "</h3>").addTo(myMap);
-
-        //   });
-        // }
+        
+              L.circle([earthquake.geometry.coordinates[1], earthquake.geometry.coordinates[0]], {
+              // onEachFeature: onEachFeature,
+              // pointToLayer: (earthquakeData, latlng) => {
+              // return new L.Circle(latlng, {
+                  radius: circleSize(magnitude),
+                  fillColor: circleColor(depth),
+                  fillOpacity: .5,
+                  stroke: false,
+              }).bindPopup("<h3>" + "Place: " + place +
+              "</h3><hr><h3>Magnitude: " + magnitude + "</h3><h3>Depth: " + depth + "</h3>").addTo(myMap);
+            })
   
-  }).catch(e => console.warn(e));
-  // Sending our earthquakes layer to the createMap function
-//      createMap(earthquakes, mags);
-// }
+  }).catch(e => console.warn(e))
+  
+  
+// // Sending our earthquakes layer to the createMap function
+// //      createMap(earthquakes, mags);
+// // }
 
 
-/* NOTE FOR STEP 2
-/  You can use the javascript Promise.all function to make two d3.json calls, 
-/  and your then function will not run until all data has been retreived.
-/
-/ ----------------------------------------
-/  Promise.all(
-/    [
-/        d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"),
-/        d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json")
-/    ]
-/  ).then( ([data,platedata]) => {
-/
-/        console.log("earthquakes", data)
-/        console.log("tectonic plates", platedata)
-/
-/    }).catch(e => console.warn(e));
-/
-/ ----------------------------------------*/ 
+// /* NOTE FOR STEP 2
+// /  You can use the javascript Promise.all function to make two d3.json calls, 
+// /  and your then function will not run until all data has been retreived.
+// /
+// / ----------------------------------------
+// /  Promise.all(
+// /    [
+// /        d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"),
+// /        d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json")
+// /    ]
+// /  ).then( ([data,platedata]) => {
+// /
+// /        console.log("earthquakes", data)
+// /        console.log("tectonic plates", platedata)
+// /
+// /    }).catch(e => console.warn(e));
+
