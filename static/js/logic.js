@@ -14,65 +14,73 @@ L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
 }).addTo(myMap);
 
 
+const setColor = (depth) => {
+  switch (true) {
+    case depth < 10:
+      return "green";
+    case depth <30 :
+      return "yellow";
+    case depth > 50:
+      return "orange";
+    case depth <= 100:
+      return "red";
+    default:
+      return "blue"
+  }}
+
 // Store our API endpoint inside the queryURL
 const queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson"
 
+
+  Promise.all(
+
 // Perform a GET request to the query URL
-d3.json(queryUrl).then(data => {
+    [d3.json(queryUrl)]).then( ([data]) => {
     console.log(data);
-    console.log(d3.extent(data.features.map(d => d.properties.mag)))
+    // console.log(d3.extent(data.features.map(d => d.properties.mag)))
     // Once we get a response, send the data.features object to the createFeatures function
-    createFeatures(data.features);
-  });
+  //   createFeatures(data.features);
+  // }),
   
-  function createFeatures(earthquakeData) {
+  // function createFeatures(earthquakeData) {
 
       // Define a function we want to run once for each feature in the features array
   // Give each feature a popup describing the place and time of the earthquake
-    function onEachFeature(feature, layer) {
-    layer.bindPopup("<h3>" + feature.properties.place +
-      "</h3><hr><h3>Magnitude: "(feature.properties.mag) + "</h3><h3>Depth: " + feature.geometry.coordinates[2] + "</h3>");
-    }
+    // function onEachFeature(feature, layer) {
+    // layer.bindPopup("<h3>" + feature.properties.place +
+    //   "</h3><hr><h3>Magnitude: "(feature.properties.mag) + "</h3><h3>Depth: " + feature.geometry.coordinates[2] + "</h3>");
+    
 
     // Create circle size based on magnitude
     // function circleSize(magnitude) {
     //   return (magnitude * 10000)
-    }
-
-    const setColor = (depth) => {
-      switch (true) {
-        case depth < 10:
-          return "green";
-        case depth <30 :
-          return "yellow";
-        case depth > 50:
-          return "orange";
-        case depth <= 100:
-          return "red";
-        default:
-          return "blue"
-      }
     
 
-      // Create a GeoJSON layer containing the features array on the earthquakeData object
-  // Run the onEachFeature function once for each piece of data in the array
-    const earthquakes = L.geoJSON(earthquakeData, {
-        onEachFeature: onEachFeature,
-     });
+        // Create a GeoJSON layer containing the features array on the earthquakeData object
+    // Run the onEachFeature function once for each piece of data in the array
+        let earthquakes = data.feaatures;
 
-    const mags = L.geoJSON(earthquakeData, {
-        onEachFeature: onEachFeature,
-        pointToLayer: (earthquakeData, latlng) => {
-        return new L.Circle(latlng, {
-            radius: feature.properties.mag*25000,
-            Color: setColor(earthquakeData.geometry.coordinates[2]),
-            fillOpacity: .5,
-            storke: false,
+        earthquakes.forEach(quake => {
+          let magnitude = quake.properties.mag;
+          let depth = quake.geometry.coordinates[2]
+          let place = quake.properties.place;
 
-        });
-       }
-      
-    }).catch(error => console.log(error));
+     
+        L.circle([earthquakes.geometry.coordinates[1], earthquakes.geometry.coordinates[0]], {
+          // onEachFeature: onEachFeature,
+          // pointToLayer: (earthquakeData, latlng) => {
+          // return new L.Circle(latlng, {
+              radius: feature.properties.mag*25000,
+              fillColor: setColor(earthquakes.geometry.coordinates[2]),
+              fillOpacity: .5,
+              storke: false,
+          }).bindPopup("<h3>" + feature.properties.place +
+      "</h3><hr><h3>Magnitude: "(feature.properties.mag) + "</h3><h3>Depth: " + feature.geometry.coordinates[2] + "</h3>").addTo(myMap);
+
+        //   });
+        // }
+  
+  }).catch(e => console.warn(e));
   // Sending our earthquakes layer to the createMap function
 //      createMap(earthquakes, mags);
 // }
